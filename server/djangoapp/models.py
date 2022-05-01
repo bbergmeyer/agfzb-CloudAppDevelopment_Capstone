@@ -67,6 +67,21 @@ class CarDealer:
     def __str__(self):
         return "Dealer name: " + self.full_name
 
-# <HINT> Create a plain Python class `DealerReview` to hold review data
-#class DealerReview(models.Model):
-#    dealer_review = models.CharField(null=True, max_length=100)
+class DealerReview(models.Model):
+
+    def __init__(self, dealership, name, purchase, review, purchase_date, car_make, car_model, car_year, sentiment, id):
+        self.dealership = dealership
+        self.name = name
+        self.purchase = purchase
+        self.review = review
+        self.purchase_date = ""
+        self.car_make = ""
+        self.car_model = ""
+        self.car_year = ""
+        self.sentiment = ""
+        self.id = ""
+
+    def __str__(self):
+        return "Review: " + self.review 
+
+
