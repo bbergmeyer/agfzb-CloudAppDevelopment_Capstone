@@ -9,7 +9,7 @@ from ibm_watson.natural_language_understanding_v1 import Features, SentimentOpti
 
 def get_request(url, **kwargs):
     api_key = kwargs.get("api_key")
-    print("GET from {} ".format(url))
+    #print("GET from {} ".format(url))
     try:
         # Call get method of requests library with URL and parameters
         if api_key:
@@ -27,7 +27,7 @@ def get_request(url, **kwargs):
         # If any error occurs
         print("Network exception occurred")
     status_code = response.status_code
-    print("With status {} ".format(status_code))
+    #print("With status {} ".format(status_code))
     json_data = json.loads(response.text)
     return json_data
 
@@ -35,7 +35,7 @@ def get_request(url, **kwargs):
 def post_request(url, json_payload, **kwargs):
     response = requests.post(url, params=kwargs, json = json_payload)
     status_code = response.status_code
-    print("With status {} ".format(status_code))
+    #print("With status {} ".format(status_code))
     json_data = json.loads(response.text)
     return json_data
 
@@ -85,28 +85,29 @@ def get_dealer_review_from_cf(url, **kwargs):
     #print(kwargs)
     dealer_id = kwargs['id']
     #print(dealer_id)
-
     json_result = get_request(url, id = dealer_id)
     #print(json_result)
-
     if json_result:
         #print(json_result["body"]["data"]["docs"])
         reviews = json_result["body"]["data"]["docs"]
         for review in reviews:
-                        if review['purchase'] == True:
+            #print(review)
+            if review['purchase'] == True or review['purchase'] == 'true':
                             review_obj = DealerReview(car_make=review["car_make"], car_model=review["car_model"],
                                     car_year=review["car_year"], dealership=review["dealership"],
                                     name=review["name"], purchase=review["purchase"],
                                     purchase_date=review["purchase_date"], review=review["review"],
                                     sentiment = analyze_review_sentiments(review["review"]))
                             results.append(review_obj)
-                        else:
+                            #print(review_obj)
+            else:
                             review_obj = DealerReview(car_make='None', car_model='No car',
                                     car_year=0, dealership=review["dealership"],
                                     name=review["name"], purchase=review["purchase"],
                                     purchase_date='', review=review["review"],
                                     sentiment = analyze_review_sentiments(review["review"]))
                             results.append(review_obj)
+                            #print(review_obj)
     return results
 
 # Create an `analyze_review_sentiments` method to call Watson NLU and analyze text
@@ -118,8 +119,8 @@ def analyze_review_sentiments(text):
     natural_language_understanding.set_service_url(url)
     #print(text)
     response = natural_language_understanding.analyze( text=text+"hello hello hello",features=Features(sentiment=SentimentOptions(targets=[text+"hello hello hello"]))).get_result()
-    #print(response)
     label=json.dumps(response, indent=2)
     label = response['sentiment']['document']['label']
+    return label
 
 

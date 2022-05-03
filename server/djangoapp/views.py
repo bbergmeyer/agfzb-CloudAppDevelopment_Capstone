@@ -12,6 +12,7 @@ import logging
 import json
 
 
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ def login_request(request):
 # Create a `logout_request` view to handle sign out request
 def logout_request(request):
     # Get the user object based on session id in request
-    print("Log out the user `{}`".format(request.user.username))
+    #print("Log out the user `{}`".format(request.user.username))
     # Logout user in the request
     logout(request)
     # Redirect user back to course list view
@@ -105,7 +106,7 @@ def get_dealerships(request):
         
 # Create a `get_dealer_details` view to render the reviews of a dealer
 def get_dealer_details(request, dealer_id):
-    print(dealer_id)
+    #print(dealer_id)
     if request.method == "GET":
         context = {}
         dealer_url = "https://04f21472.us-south.apigw.appdomain.cloud/api/dealership"
@@ -115,7 +116,7 @@ def get_dealer_details(request, dealer_id):
 
         review_url = "https://04f21472.us-south.apigw.appdomain.cloud/api/review" 
         reviews = get_dealer_review_from_cf(review_url, id=dealer_id)
-        print(reviews)
+        #print(reviews)
         context["reviews"] = reviews
 
         return render(request, 'djangoapp/dealer_details.html', context)
@@ -125,24 +126,40 @@ def get_dealer_details(request, dealer_id):
 # Create a `add_review` view to submit a review
 def add_review(request, dealer_id):
     context = {}
+    review_url = "https://04f21472.us-south.apigw.appdomain.cloud/api/review"
+    dealer_url = "https://04f21472.us-south.apigw.appdomain.cloud/api/dealership"
+    dealer = get_dealer_by_id_from_cf(dealer_url, id=dealer_id)
+    context["dealer"] = dealer
     if request.method == "POST":
         if request.user.is_authenticated:
-            url = "https://04f21472.us-south.apigw.appdomain.cloud/api/review"
-            review = ()
-            review["name"] = request.username
+            review = {}
+            review["name"] = request.user.username
             review["time"] = datetime.utcnow().isoformat()
             review["dealership"] = dealer_id
-            review["review"] = request.review
-            if request.purchase:
-                review["purchase"] = request.purchase
-                review["purchase_date"] = request.purchase_date
-                review["car_make"] = request.car_make
-                review["car_model"] = request.car_model
-                review["car_year"] = request.car_year
-            json_payload = ()
+            review["review"] = request.POST["review"]
+            if request.POST["purchasecheck"] == '1':
+                picked_car = request.POST["car"]
+                car = CarModel.objects.get(pk=picked_car)
+                review["purchase"] = "true"
+                review["purchase_date"] = request.POST["purchasedate"]
+                review["car_make"] = car.model_make.make_name
+                review["car_model"] = car.model_name
+                review["car_year"] = car.model_year.year
+            else:
+                review["purchase"] = 'false'
+            json_payload = {}
             json_payload["review"] = review
-            post_request(url, json_payload, dealer=dealer_id )
-        return redirect("djangoapp:dealer_details", id=id)
+            #print(json_payload)
+            post_request(review_url, json_payload )
+        return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
+    elif request.method == "GET":
+        # Get cars for the dealer
+        cars = CarModel.objects.filter(dealer_id=dealer_id)
+        #print(cars)
+        context["cars"] = cars
+        return render(request, 'djangoapp/add_review.html', context)
+
+
         
 
 

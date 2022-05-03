@@ -13,7 +13,7 @@ class CarMake(models.Model):
     make_description = models.CharField(null=False, max_length=100)
 
     def __str__(self):
-        return self.make_name + " " + self.make_description
+        return self.make_name
 
 # model for car model related to car make
 class CarModel(models.Model):
@@ -38,7 +38,7 @@ class CarModel(models.Model):
     model_make = models.ForeignKey(CarMake, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.model_name + " " + self.model_type
+        return self.model_name
 
 
 
